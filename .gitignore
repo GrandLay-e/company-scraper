@@ -23,3 +23,7 @@ src/*.pyc
 
 # Ignore specific files
 src/IDS.py
+src/__pycache__/Companies.cpython-312.pyc
+src/__pycache__/Companies.cpython-312.pyc
+src/__pycache__/CONST.cpython-312.pyc
+src/__pycache__/sites.cpython-312.pyc
