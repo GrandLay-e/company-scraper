@@ -1,12 +1,14 @@
 import json
 import sqlite3
+import logging
+
 
 def get_json(file):
     try:
         with open(file, "r", encoding='utf-8') as f:
             return json.load(f)
     except Exception as e:
-        print("Erreur dans get JSON : ", e)
+        logging.error(f"Unexpected Error while getting JSON file {file}: {e}")
         return {}
 
 def create_table(db):

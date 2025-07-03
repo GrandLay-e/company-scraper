@@ -47,7 +47,7 @@ class Companies:
         return Companies([
             Company(
                 name,
-                company.get("URL Page", "Unknown"),
+                company.get("URL ", "Unknown"),
                 company.get("Web Site", "Unknown"),
                 company.get("Domain", "Unknown"),
                 company.get("Location", "Unknown"),

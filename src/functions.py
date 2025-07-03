@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import tempfile
 import requests
 from bs4 import BeautifulSoup
 
@@ -8,11 +9,15 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.common.exceptions import StaleElementReferenceException
+
 import time
 import logging
 from pathlib import Path
 
-from CONST import *
+from SELECTORS import *
 from Company import Company
 from Companies import Companies
 
@@ -31,38 +36,22 @@ except FileNotFoundError:
     )
 logger = logging.getLogger(__name__)
 
-def initialize_logging():
-    """
-    Initialize logging configuration.
-    """
-    try:
-        logging.basicConfig(
-            filemode='w',
-            filename=LOGGING_FILE,
-            level=logging.INFO,
-            format='%(asctime)s [%(levelname)s] %(message)s',
-        )
-    except FileNotFoundError:
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s [%(levelname)s] %(message)s',
-        )
-    logger.info("Logging initialized successfully.")
-    
 def init_driver():
     """
     Initialize a Chrome WebDriver instance.
 
     Returns:
         webdriver.Chrome: The initialized Chrome WebDriver object.
-        int: 0 if initialization fails.
+        None: If initialization fails.
     """
+    options = webdriver.ChromeOptions()
     try:
-        return webdriver.Chrome()
+        return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     except Exception as e:
         logger.error(f"ERROR INITIALIZING THE WEBDRIVER, message : {e}")
-        return 0
+        return None
 
+    
 def get_url(driver, url):
     """
     Load the specified URL using the provided WebDriver.
@@ -76,26 +65,33 @@ def get_url(driver, url):
     except Exception as e:
         logger.error(f"ERROR TRYING TO GET URL, CHECK YOUR URL : {e}")
 
-def find_element(driver, selectors_key, number="one"):
+def find_element(driver, selectors_key, number="one", timeout=10):
     """
-    Find an element or elements by CSS selector.
+    Find an element or elements by CSS selector with an explicit wait.
 
     Args:
         driver (webdriver.Chrome): The WebDriver instance.
         selectors_key (int): The key for the CSS selector.
         number (str): "one" for a single element, otherwise multiple.
+        timeout (int): The maximum time to wait for the element(s) to be found.
 
     Returns:
-        WebElement or list: The found element(s), or 0 if not found.
+        WebElement or list: The found element(s), or None if not found.
     """
     try:
         if number == "one":
-            return driver.find_element(By.CSS_SELECTOR, CSS_SELECTORS[selectors_key])
+            logger.info(f"Finding element with selector: {CSS_SELECTORS[selectors_key]}")
+            return WebDriverWait(driver, timeout).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, CSS_SELECTORS[selectors_key]))
+            )
         else:
-            return driver.find_elements(By.CSS_SELECTOR, CSS_SELECTORS[selectors_key])
+            logger.info(f"Finding elements with selector: {CSS_SELECTORS[selectors_key]}")
+            return WebDriverWait(driver, timeout).until(
+                EC.presence_of_all_elements_located((By.CSS_SELECTOR, CSS_SELECTORS[selectors_key]))
+            )
     except Exception as e:
         logger.error(f"ERROR FINDING ELEMENT, message : {e}")
-        return 0
+        return None
 
 def click_on_element(driver, element):
     """
@@ -108,8 +104,40 @@ def click_on_element(driver, element):
     try:
         time.sleep(3)
         driver.execute_script("arguments[0].click();", element)
+        return True
     except Exception as e:
         logger.error(f"CLICK ON THE ELEMENT : {element} field. Message : {e}")
+        return False
+
+
+# def click_on_element(driver, element):
+#     """
+#     Click on the specified element using JavaScript.
+
+#     Args:
+#         driver (webdriver.Chrome): The WebDriver instance.
+#         element (WebElement): The element to click.
+
+#     Returns:
+#         bool: True if the click was successful, False otherwise.
+#     """
+#     max_attempts = 3
+#     for attempt in range(max_attempts):
+#         try:
+#             # Wait for the element to be clickable
+#             WebDriverWait(driver, 10).until(EC.element_to_be_clickable(element))
+#             driver.execute_script("arguments[0].click();", element)
+#             return True
+#         except StaleElementReferenceException:
+#             logger.warning(f"Stale element reference for {element}. Retrying... (Attempt {attempt + 1})")
+#             # Re-locate the element if it becomes stale
+#             element = find_element(driver, element)  # You may need to adjust this line to re-find the element
+#         except Exception as e:
+#             logger.error(f"Failed to click on the element: {e}")
+#             return False
+#     logger.error("Maximum attempts reached. Could not click on the element.")
+#     return False
+
 
 def get_number_of_pages(driver, url, timeout=15):
     """
@@ -374,6 +402,16 @@ def offres_emploi(driver, urljobs):
     jobs = soup.select(CSS_SELECTORS[16])
     return [job.text for job in jobs]
 
+def error_finding_element(element):
+    """
+    Log an error message if an element is not found.
+
+    Args:
+        element : The name of the element that was not found.
+    """
+    logger.error(f"Element {element} not found. Please check the CSS selector or the page structure.")
+    return 0
+
 def main():
     """
     Main function to scrape company data and save it to SQLite and JSON files.
@@ -395,15 +433,36 @@ def main():
 
         # Find the sector element and click on it to select the Tech category
         sector = find_element(driver, 1)
-        click_on_element(driver, sector)
+        if not sector:
+            logger.error("Sector element not found. Exiting.")
+            return
+        logger.info("Sector element found, clicking to select Tech category.")
+        time.sleep(2)
+        # Click on the sector element to open the dropdown
+        if click_on_element(driver, sector) == True:
+            time.sleep(1) # Wait for the list of sectors to open
+        else:
+            logger.error("Failed to click on the sector element. Exiting.")
+            return
 
         # Find the Tech category element and click on it
         tech_category = find_element(driver, 2)
+        if not tech_category:
+            logger.error("Tech category element not found. Exiting.")
+            return
         check_tech = find_element(tech_category, 3)
+        if not check_tech:
+            logger.error("Checkbox for Tech category not found. Exiting.")
+            return
+        logger.info("Tech category element found, clicking to select it.")
         click_on_element(driver, check_tech)
 
         # Find the search button and click on it to apply the filter
         search_button = find_element(driver, 4)
+        if not search_button:
+            logger.error("Search button element not found. Exiting.")
+            return
+        logger.info("Search button element found, clicking to apply the filter.")
         click_on_element(driver, search_button)
 
         #get the first page URL and the number of pages
@@ -414,28 +473,31 @@ def main():
         all_pages = get_all_pages_url(tech_first_page_url, number_of_pages)
         blocks = get_companys_blocks(driver, tech_first_page_url)
         logger.info(f"Number of company blocks found on the first page: {len(blocks)}")
-        for block in blocks:
-            infos = get_companys_infos(driver, block)
-            if infos:
-                companies.companies.append(construct_company_object(infos))
-            time.sleep(1)
-        # for page in all_pages:
-        #     logger.info(f"Processing page: {page}")
-        #     blocks = get_companys_blocks(driver, page)
-        #     for block in blocks:
-        #         infos = get_companys_infos(driver, block)
-        #         if infos:
-        #             companies.companies.append(construct_company_object(infos))
-        #         time.sleep(1)
+        for page in all_pages:
+            logger.info(f"Processing page: {page}")
+            blocks = get_companys_blocks(driver, page)
+            for block in blocks:
+                infos = get_companys_infos(driver, block)
+                if infos:
+                    companies.companies.append(construct_company_object(infos))
+                time.sleep(1)
     finally:
         if driver is not None:
             driver.quit()
 
     if len(companies.companies) > 0:
         logger.info(f"Total companies found: {len(companies.companies)}")
-        companies.save_companies_to_sqlite(DB_FILE)
-        companies.save_companies_to_json(JSON_FILE)
-        logger.info(f"Companies data saved to {DB_FILE} and {JSON_FILE}")
+        # Save the companies data to SQLite and JSON files
+        try:
+            companies.save_companies_to_sqlite(DB_FILE)
+            companies.save_companies_to_json(JSON_FILE)
+            logger.info(f"Companies data saved to {DB_FILE} and {JSON_FILE}")
+        except FileExistsError or FileNotFoundError :
+            logger.error(f"Error saving companies data to files: {DB_FILE} or {JSON_FILE}. Please check the file paths.")
+            companies.save_companies_to_json("data.json")
+            companies.save_companies_to_sqlite("data.db")
+        except Exception as e:
+            logger.error(f"An unexpected error occurred while saving companies data: {e}")
     else:
         logger.warning("No companies found during the scraping process.")
 
