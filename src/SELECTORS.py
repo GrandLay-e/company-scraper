@@ -12,28 +12,20 @@ MESSAGE_TEXTAREA = "#cover_letter"
 CONDITIONS_CHECKBOX = "#consent"
 POSTULER = "#apply-form-submit"
 CLOSE_LAYOUT = "button svg path"
+VALIDE = ".eVRzDd"
 # CLOSE_LAYOUT = ".eVRzDd > header:nth-child(1) > button:nth-child(1).eVRzDd > header:nth-child(1) > button:nth-child(1)"
 
 #______________________________________FOR RETRIEVING DATA____________________________________
 
-APPLIED = "../data/applied"
-LOGGING_FILE = "../log/process.log"
-JSON_FILE = "../data/data.json"
-DB_FILE = "../data/data.db"
-VALIDE = ".eVRzDd"
-
 MAIN_URL = "https://www.welcometothejungle.com/"
 COMPANIES_URL = urljoin(MAIN_URL, "fr/companies")
 
-test = "header[data-testid='companies-search-search-widget-sectors']"
-SECTOR_CSS_SELECTOR = "header[data-testid='companies-search-search-widget-sectors']"
-
-# CSS Selectors for the Tech sector
-TECH_CSS_SELECTOR = "span[data-testid='companies-search-search-widgets-sectors_name-19-trigger']"
-CHECKBOX_TECH_SELECTOR = "input[type='checkbox']"
-SEARCH_BUTTON_CSS_SELECTOR = "button[type='submit'].sc-bkUKrm"
-
 # CSS Selectors as constants
+SECTOR_CSS_SELECTOR = ".sc-fvtCpz > header:nth-child(1)"
+TECH_CSS_SELECTOR = "span[data-testid='companies-search-search-widgets-sectors_name-19-trigger']"
+CHECKBOX_TECH_SELECTOR =  "div.sc-brzPDJ:nth-child(20) > div:nth-child(1) > span:nth-child(1) > input:nth-child(1)"
+SEARCH_BUTTON_CSS_SELECTOR = "button.sc-kWJkYy:nth-child(5) > span:nth-child(2)"
+
 PAGINATION_NAV_SELECTOR = "[data-testid='companies-search-pagination'] nav ul"
 PAGINATION_LI_SELECTOR = PAGINATION_NAV_SELECTOR + " li"
 COMPANY_BLOCK_SELECTOR = "article[data-role='companies:thumb'][data-testid='company-card']"

@@ -1,5 +1,6 @@
 from datetime import datetime
 import IDS
+from CONST import *
 from functions import *
 from SELECTORS import *
 
@@ -16,14 +17,6 @@ def get_applied(file):
         with open(file, "w") as f:
             return []
 
-def find_and_click(driver, selector_key, company_name):
-    element = find_element(driver, selector_key)
-    if not element:
-        logger.error(f"Element not found for {company_name} with selector key {selector_key}.")
-        return False
-    click_on_element(driver, element)
-    return True
-
 def write_cover_letter(element, company_name):
     try:
         element.clear()
@@ -37,52 +30,33 @@ def write_cover_letter(element, company_name):
         logger.error(f"Error writing cover letter for {company_name}: {e}")
         return False
 
-driver = init_driver()
-get_url(driver, "https://www.welcometothejungle.com/fr/signin")
-time.sleep(2)
 
 # Write email
-email_input = find_element(driver, 18)
-if not email_input:
-    logger.error("Email input field not found.")
-    driver.quit()
-    exit(1)
-email_input.send_keys(IDS.MAIL)
+def connect(driver):
+    email_input = find_element(driver, 18)
+    if not email_input:
+        logger.error("Email input field not found.")
+        driver.quit()
+        exit(1)
+    email_input.send_keys(IDS.MAIL)
 
-# Write password
-password_input = find_element(driver, 19)
-if not password_input:
-    logger.error("Password input field not found.")
-    driver.quit()
-    exit(1)
-password_input.send_keys(IDS.PASSWORD)
+    # Write password
+    password_input = find_element(driver, 19)
+    if not password_input:
+        logger.error("Password input field not found.")
+        driver.quit()
+        exit(1)
+    password_input.send_keys(IDS.PASSWORD)
+    # Click on the login button
+    driver.find_element(By.CSS_SELECTOR, CSS_SELECTORS[17]).click()
+    time.sleep(2)
 
-# Click on the login button
-driver.find_element(By.CSS_SELECTOR, CSS_SELECTORS[17]).click()
-time.sleep(2)
 
-# Get all companies from the JSON file
-cps = Companies([])
-data = cps.get_companies_from_json(JSON_FILE).companies
-if not data:
-    logger.error("No companies found in the JSON file.")
-    driver.quit()
-    exit(1)
-
-# Filter companies based on location, spontaneity, and domain
-filtered_companies = [c for c in data if "Paris" in c.location and c.spontane == "Oui" and "Logiciels" in c.domain]
-applied = get_applied(APPLIED)
-
-# Check if there are companies to apply to
-if not filtered_companies:
-    logger.info("No companies found to apply to.")
-    driver.quit()
-    exit(0)
-
-for company in filtered_companies:
+def apply_to_company(company):
+    applied = get_applied(APPLIED)
     if company.name + "\n" in applied:
         print(f"{company.name} has already been applied to.")
-        continue
+        return
 
     print(f"Applying to {company.name}...")
     link = company.url_wtj
@@ -91,28 +65,54 @@ for company in filtered_companies:
     time.sleep(1)
 
     if not find_and_click(driver, 20, company.name):
-        continue
+        return
 
     cover_letter_area = find_element(driver, 21)
     if not cover_letter_area or not write_cover_letter(cover_letter_area, company.name):
         logger.error(f"Message textarea not found or error writing for {company.name}.")
-        continue
+        return
 
     if not find_and_click(driver, 22, company.name):
-        continue
+        return
 
     time.sleep(2)
 
     if not find_and_click(driver, 23, company.name):
-        continue
+        return
 
     if not find_and_click(driver, 25, company.name):
-        continue
+        return
 
     print(f"Application successfully submitted for {company.name}.")
     liste_postule(APPLIED, company.name)
 
     time.sleep(2)
 
-driver.quit()
-# End of the script
+if __name__ == "__main__":
+    driver = init_driver()
+    get_url(driver, "https://www.welcometothejungle.com/fr/signin")
+    time.sleep(2)
+
+    connect(driver)
+    # Get all companies from the JSON file
+    cps = Companies([])
+    data = cps.get_companies_from_json(JSON_FILE).companies
+    if not data:
+        logger.error("No companies found in the JSON file.")
+        driver.quit()
+        exit(1)
+
+    # Filter companies based on location, spontaneity, and domain
+    filtered_companies = [c for c in data if "Paris" in c.location and c.spontane == "Oui" and "Logiciels" in c.domain]
+
+    # Check if there are companies to apply to
+    if not filtered_companies:
+        logger.info("No companies found to apply to.")
+        driver.quit()
+        exit(0)
+
+    for company in filtered_companies:
+        apply_to_company(company)
+
+    driver.quit()
+    # End of the script
