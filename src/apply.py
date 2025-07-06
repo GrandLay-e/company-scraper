@@ -4,7 +4,7 @@ from CONST import *
 from functions import *
 from SELECTORS import *
 
-def liste_postule(file, company_name):
+def add_applied_company(file, company_name):
     with open(file, "a") as f:
         f.write(f"{company_name}\n")
     
@@ -13,9 +13,12 @@ def get_applied(file):
         with open(file, "r") as f:
             return f.readlines()
     except (FileNotFoundError, UnicodeDecodeError):
+        logger.warning(f"File {file} not found or cannot be read. Creating a new file.")
         # If the file does not exist, create it and return an empty list
-        with open(file, "w") as f:
-            return []
+    except Exception  as e:
+        logger.error(f"An error occurred while reading the file {file}: {e}")
+    with open(file, "w") as f:
+        return []
 
 def write_cover_letter(element, company_name):
     try:
@@ -30,9 +33,9 @@ def write_cover_letter(element, company_name):
         logger.error(f"Error writing cover letter for {company_name}: {e}")
         return False
 
-
-# Write email
 def connect(driver):
+    get_url(driver, LOGIN_URL)
+
     email_input = find_element(driver, 18)
     if not email_input:
         logger.error("Email input field not found.")
@@ -47,53 +50,40 @@ def connect(driver):
         driver.quit()
         exit(1)
     password_input.send_keys(IDS.PASSWORD)
+
     # Click on the login button
     driver.find_element(By.CSS_SELECTOR, CSS_SELECTORS[17]).click()
-    time.sleep(2)
 
-
-def apply_to_company(company):
-    applied = get_applied(APPLIED)
+def apply_to_company(driver,company, applied : list[str] = None):
     if company.name + "\n" in applied:
         print(f"{company.name} has already been applied to.")
         return
 
     print(f"Applying to {company.name}...")
     link = company.url_wtj
-    job_link = link.split("?")[0] + "/jobs?" + link.split("?")[1]
+    job_link = urljoin(link.split("?")[0]+'/', "jobs")
     get_url(driver, job_link)
-    time.sleep(1)
-
     if not find_and_click(driver, 20, company.name):
         return
-
     cover_letter_area = find_element(driver, 21)
     if not cover_letter_area or not write_cover_letter(cover_letter_area, company.name):
         logger.error(f"Message textarea not found or error writing for {company.name}.")
         return
-
     if not find_and_click(driver, 22, company.name):
         return
-
-    time.sleep(2)
-
     if not find_and_click(driver, 23, company.name):
         return
-
     if not find_and_click(driver, 25, company.name):
         return
 
-    print(f"Application successfully submitted for {company.name}.")
-    liste_postule(APPLIED, company.name)
-
-    time.sleep(2)
+    logger.info(f"Application successfully submitted for {company.name}.")
+    add_applied_company(APPLIED, company.name)
 
 if __name__ == "__main__":
     driver = init_driver()
-    get_url(driver, "https://www.welcometothejungle.com/fr/signin")
-    time.sleep(2)
 
     connect(driver)
+
     # Get all companies from the JSON file
     cps = Companies([])
     data = cps.get_companies_from_json(JSON_FILE).companies

@@ -4,6 +4,10 @@
 *.pyo
 *.db
 *.json
+*.pyd
+*.xml
+*iml
+
 
 # Ignore text files
 *.txt

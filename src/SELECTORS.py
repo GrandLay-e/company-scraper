@@ -19,6 +19,7 @@ VALIDE = ".eVRzDd"
 
 MAIN_URL = "https://www.welcometothejungle.com/"
 COMPANIES_URL = urljoin(MAIN_URL, "fr/companies")
+LOGIN_URL = urljoin(MAIN_URL, "fr/signin")
 
 # CSS Selectors as constants
 SECTOR_CSS_SELECTOR = ".sc-fvtCpz > header:nth-child(1)"
@@ -33,11 +34,12 @@ COMPANY_NAME_SELECTOR = "div header a span"
 COMPANY_DETAILS_SELECTOR = "ul li"
 COMPANY_OFFER_SELECTOR = "footer a span"
 COMPANY_LINK_SELECTOR = "a"
-COMPANY_WEBSITE_SELECTOR = "div div p a"
-COMPANY_DETAILS_BLOCK_SELECTOR = "div.sc-iqrLza.hGwRdy.showcase-block.block.block-span-1 div div section"
-COMPANY_DETAILS_TITLE_SELECTOR = "h4"
+COMPANY_WEBSITE_SELECTOR = ".sc-dNIQWH"
+COMPANY_DETAILS_BLOCK_SELECTOR = ".dyNymF section"
+COMPANY_DETAILS_TITLE_SELECTOR = "p"
 COMPANY_DETAILS_CONTENT_SELECTOR = "span"
-COMPANY_JOBS_SELECTOR = "div div a h4"
+COMPANY_JOBS_SELECTOR = "div div a h2"
+COMPANY_SPONTANEOUS_SELECTOR = "div.sc-iorCAc.imcUbI > div > div > div > div > div.sc-brzPDJ.jijEDz.sc-dUrdUa.jRFTsL > div > ul > li.sc-brzPDJ > div > div > div > button"
 
 # ____________________________ALL SELECTORS IN A DICTIONNARY_____________________________________________
 
