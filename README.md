@@ -45,12 +45,12 @@ This project is a Python automation tool that scrapes company data from [Welcome
 Install dependencies with:
 
 ```sh
-pip install selenium webdriver-manager beautifulsoup4 requests
+pip install selenium webdriver-manager beautifulsoup4
 ```
 
 ## Usage
 
-### 1. Scrape Company Data
+### 1. Scrape Company Data (actually only tech sector)
 
 Run the main scraper to collect company data:
 

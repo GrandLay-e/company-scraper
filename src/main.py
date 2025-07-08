@@ -78,12 +78,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # driver = init_driver()
-    # get_url(driver, MAIN_TECH_PAGE_URL)
-    # blocks = get_companys_blocks(driver, MAIN_TECH_PAGE_URL)
-    # if blocks:
-    #     for block in blocks:
-    #         infos = get_companys_infos(driver, block)
-    #         if infos:
-    #             company = construct_company_object(infos)
-    #             # print(company)

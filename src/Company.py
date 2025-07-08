@@ -102,35 +102,39 @@ class Company :
         with open(file, "w", encoding="utf-8") as f:
             json.dump(new_value,f,ensure_ascii=False, indent=4)
 
-    def save_to_sqlite(self, db_file):
+    def save_one_to_sqlite(self, db):
+        create_table(db)
         try:
-            conn = sqlite3.connect(db_file)
-            cursor = conn.cursor()
-            create_table(db_file)
+            with sqlite3.connect(db) as conn:
+                cursor = conn.cursor()
+                self.save_to_sqlite(cursor)
+                conn.commit()
+        except sqlite3.Error as e:
+            print(f"[SQLite] Erreur lors de l'enregistrement de {self.name} : {e}")
 
+    def save_to_sqlite(self, cursor):
+        try:
             cursor.execute('''
-                    INSERT OR REPLACE INTO companies (
-                        name, url, web_site, domain, location,
-                        number_of_salaries, average_age, offers, all_offers,
-                        spontaneous_application, email, phone_number
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                self.name,
-                self.url_wtj,
-                self.url_web_site,
-                self.domain,
-                self.location,
-                self.number_of_salaries,
-                self.avg_age,
-                self.offers,
-                json.dumps(self.all_offers, ensure_ascii=False),
-                self.spontane,
-                self.email,
-                self.phone_number
+                INSERT INTO companies (
+                name, url, web_site, domain, location,
+                number_of_salaries, average_age, offers, all_offers,
+                spontaneous_application, email, phone_number
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(name) DO NOTHING
+            ''', (
+            self.name,
+            self.url_wtj,
+            self.url_web_site,
+            self.domain,
+            self.location,
+            self.number_of_salaries,
+            self.avg_age,
+            self.offers,
+            json.dumps(self.all_offers, ensure_ascii=False),
+            self.spontane,
+            self.email,
+            self.phone_number
             ))
-
-            conn.commit()
-            conn.close()
         except Exception as e:
             print(f"[SQLite] Erreur lors de l'enregistrement de {self.name} : {e}")
 

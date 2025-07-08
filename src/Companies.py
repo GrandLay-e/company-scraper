@@ -4,7 +4,7 @@ import json
 from Company import Company, get_json
 
 class Companies:
-    def __init__(self, companies: list[Company]):
+    def __init__(self, companies: list[Company] ):
         self.companies = companies
 
     def show_companies(self):
@@ -12,12 +12,17 @@ class Companies:
             company.show_company()
 
     def save_companies_to_json(self, file):
-        for company in self.companies:
-            company.save_data_to_json(file)
+        with open(file, 'w', encoding='utf-8') as f:
+            json.dump([company.formated_data() for company in self.companies], f, ensure_ascii=False, indent=4)
 
     def save_companies_to_sqlite(self, db):
-        for company in self.companies:
-            company.save_to_sqlite(db)
+        from Company import create_table
+        create_table(db) 
+        with sqlite3.connect(db) as conn:
+            cursor = conn.cursor()
+            for company in self.companies:
+                company.save_to_sqlite(cursor)
+            conn.commit()
 
     def get_companies_from_sqlite(self, db):
         with sqlite3.connect(db) as conn:
