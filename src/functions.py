@@ -193,19 +193,21 @@ def get_companys_blocks(driver, url):
         logger.error(f"Error getting company blocks: {e}")
         return []
 
-def get_companys_infos(driver, block):
+def get_companys_infos(driver, block, existing_companies = []):
     """
     Extract company info from a block.
     """
     try:
         # Extracting company information from the block
         name = block.select_one(CSS_SELECTORS[8]).text if block.select_one(CSS_SELECTORS[8]).text else "N/A" 
+        if name in existing_companies:
+            logger.info(f"Company {name} already exists. Skipping.")
+            return {}
         details = block.select(CSS_SELECTORS[9]) if block.select(CSS_SELECTORS[9]) else []
         domain = details[-3].text if len(details) > 2 else "N/A"
         location = details[-2].text if len(details) > 1 else "N/A"
         offer = block.select_one(CSS_SELECTORS[10]).text if block.select_one(CSS_SELECTORS[10]).text else "N/A"
         link = urljoin(MAIN_URL, block.select_one(CSS_SELECTORS[11])['href']) if block.select_one(CSS_SELECTORS[11]) else "N/A"
-
         infos = {
             "Name": name,
             "Domain": domain,
@@ -215,19 +217,19 @@ def get_companys_infos(driver, block):
         }
 
         jobs_link = urljoin(link.split("?")[0]+'/', "jobs")
-        offres = offres_emploi(driver, jobs_link)
+        offres = job_offers(driver, jobs_link)
         infos["Offres"] = offres 
 
         if "Candidature spontanée" in offres:
-            infos["Candidature spontanée"] = "Oui"
+            infos["Candidature spontanée"] = "Yes"
         else:
-            infos["Candidature spontanée"] = "Non"
+            infos["Candidature spontanée"] = "No"
 
         infos = infos | get_other_infos(driver, link)
         return infos
 
     except Exception as e:
-        logger.error(f"Erreur récupèration des informations de {block.select_one(CSS_SELECTORS[8]).text} \n Message {e}")
+        logger.error(f"Error retrieving information for {block.select_one(CSS_SELECTORS[8]).text} \n Message {e}")
         return {}
 
 def get_other_infos(driver, url):
@@ -258,7 +260,7 @@ def get_other_infos(driver, url):
             continue
     return block_dict
 
-def offres_emploi(driver, urljobs):
+def job_offers(driver, urljobs):
     """
     Get job offers from a jobs URL.
     """

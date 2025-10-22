@@ -32,12 +32,12 @@ class Companies:
 
             return Companies([
                 Company(
-                    name=row[0],
-                    url=row[1],
-                    web_site=row[2],
-                    domain=row[3],
-                    location=row[4],
-                    number_salaries=row[5],
+                    name=row[1],
+                    url=row[2],
+                    web_site=row[3],
+                    domain=row[4],
+                    location=row[5],
+                    number_salaries=row[6],
                     average_age=row[6],
                     offers=row[7],
                     all_offers= json.loads(row[8]) if isinstance(row[8], (str, bytes, bytearray)) else row[8],
@@ -59,6 +59,6 @@ class Companies:
                 company.get("Offers Number", "Unknown"),
                 company.get("Offers List", "Unknown"),
                 company.get("Spontaneous application", "Unknown"),
-            ) for name, company in all_companies.items()
+            ) for companies in all_companies for name, company in companies.items()
         ])
 

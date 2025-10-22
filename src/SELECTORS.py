@@ -18,8 +18,8 @@ VALIDE = ".eVRzDd"
 #______________________________________FOR RETRIEVING DATA____________________________________
 
 MAIN_URL = "https://www.welcometothejungle.com/"
-COMPANIES_URL = urljoin(MAIN_URL, "fr/companies")
-LOGIN_URL = urljoin(MAIN_URL, "fr/signin")
+COMPANIES_URL = urljoin(MAIN_URL, "en/companies")
+LOGIN_URL = urljoin(MAIN_URL, "en/signin")
 
 # CSS Selectors as constants
 SECTOR_CSS_SELECTOR = ".sc-fvtCpz > header:nth-child(1)"
@@ -34,7 +34,7 @@ COMPANY_NAME_SELECTOR = "div header a span"
 COMPANY_DETAILS_SELECTOR = "ul li"
 COMPANY_OFFER_SELECTOR = "footer a span"
 COMPANY_LINK_SELECTOR = "a"
-COMPANY_WEBSITE_SELECTOR = ".sc-dNIQWH"
+COMPANY_WEBSITE_SELECTOR = ".sc-bFQvPF"
 COMPANY_DETAILS_BLOCK_SELECTOR = ".dyNymF section"
 COMPANY_DETAILS_TITLE_SELECTOR = "p"
 COMPANY_DETAILS_CONTENT_SELECTOR = "span"

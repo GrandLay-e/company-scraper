@@ -1,5 +1,5 @@
 APPLIED = "data/applied.json"
 IGNORED = "data/ignored.json"
-LOGGING_FILE = "log/process(stage).log"
+LOGGING_FILE = "log/process.log"
 JSON_FILE = "data/data.json"
 DB_FILE = "data/data.db"

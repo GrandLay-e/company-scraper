@@ -26,7 +26,7 @@ def create_table(db):
             average_age INTEGER,
             offers INTEGER,
             all_offers TEXT,
-            spontaneous_application TEXT,
+            spontaneous_application TEXT
         );
     ''')
     conn.commit()
@@ -101,29 +101,45 @@ class Company :
                 self.save_to_sqlite(cursor)
                 conn.commit()
         except sqlite3.Error as e:
-            print(f"[SQLite] Erreur lors de l'enregistrement de {self.name} : {e}")
+            print(f"[SQLite] Error while saving {self.name} : {e}")
 
     def save_to_sqlite(self, cursor):
         try:
+            # normaliser la valeur web_site pour ne pas insérer "N/A" ou chaîne vide
+            web_site_val = None if self.url_web_site in (None, "", "N/A") else self.url_web_site
+
             cursor.execute('''
                 INSERT INTO companies (
-                name, url, web_site, domain, location,
-                number_of_salaries, average_age, offers, all_offers,
-                spontaneous_application
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(name) DO NOTHING
+                    name, url, web_site, domain, location,
+                    number_of_salaries, average_age, offers, all_offers,
+                    spontaneous_application
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(name) DO UPDATE SET
+                    url = excluded.url,
+                    web_site = CASE
+                        WHEN excluded.web_site IS NOT NULL AND excluded.web_site != '' AND excluded.web_site != 'N/A'
+                        THEN excluded.web_site
+                        ELSE companies.web_site
+                    END,
+                    domain = excluded.domain,
+                    location = excluded.location,
+                    number_of_salaries = excluded.number_of_salaries,
+                    average_age = excluded.average_age,
+                    offers = excluded.offers,
+                    all_offers = excluded.all_offers,
+                    spontaneous_application = excluded.spontaneous_application
             ''', (
-            self.name,
-            self.url_wtj,
-            self.url_web_site,
-            self.domain,
-            self.location,
-            self.number_of_salaries,
-            self.avg_age,
-            self.offers,
-            json.dumps(self.all_offers, ensure_ascii=False),
-            self.spontane
+                self.name,
+                self.url_wtj,
+                web_site_val,
+                self.domain,
+                self.location,
+                self.number_of_salaries,
+                self.avg_age,
+                self.offers,
+                json.dumps(self.all_offers, ensure_ascii=False),
+                self.spontane
             ))
         except Exception as e:
-            print(f"[SQLite] Erreur lors de l'enregistrement de {self.name} : {e}")
+            print(f"[SQLite] Error while saving {self.name} : {e}")
 
