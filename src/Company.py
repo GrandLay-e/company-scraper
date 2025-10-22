@@ -27,8 +27,6 @@ def create_table(db):
             offers INTEGER,
             all_offers TEXT,
             spontaneous_application TEXT,
-            email TEXT,
-            phone_number TEXT
         );
     ''')
     conn.commit()
@@ -45,9 +43,7 @@ class Company :
                  average_age,
                  offers,
                  all_offers,
-                 spontaneous_application,
-                 email ="",
-                 phone_number =""):
+                 spontaneous_application):
 
         self.name = name
         self.url_wtj = url
@@ -55,8 +51,6 @@ class Company :
         self.domain = domain
         self.location = location
         self.number_of_salaries = number_salaries # int(number_salaries) if str(number_salaries).isdigit() else None
-        self.email = email
-        self.phone_number = phone_number
         self.avg_age = average_age #int(average_age.split(' ')[0]) if str(average_age).split(' ')[0].isdigit() else None
         self.offers = offers # int(offers.split(' ')[0]) if offers.split(' ')[0].isdigit() else 1 if spontaneous_application == "Oui" else 0
         self.all_offers = all_offers
@@ -77,9 +71,7 @@ class Company :
             "Offers Number" : self.offers,
                 "Offers List" : [self.all_offers],
             "Spontaneous application" : self.spontane,
-            "Average Age": self.avg_age,
-            "E-Mail": self.email,
-            "Phone": self.phone_number
+            "Average Age": self.avg_age
             }
         }
 
@@ -93,8 +85,7 @@ class Company :
             f"Spontaneous Application : {self.spontane}\n"
             f"Number of Employees: {self.number_of_salaries}\n"
             f"Average Age: {self.avg_age}\n"
-            f"E-Mail: {self.email}\n"
-            f"Phone Number: {self.phone_number}\n")
+            f"Spontaneous Application: {self.spontane}\n")
 
     def save_data_to_json(self, file):
         data = get_json(file)
@@ -118,7 +109,7 @@ class Company :
                 INSERT INTO companies (
                 name, url, web_site, domain, location,
                 number_of_salaries, average_age, offers, all_offers,
-                spontaneous_application, email, phone_number
+                spontaneous_application
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(name) DO NOTHING
             ''', (
@@ -131,9 +122,7 @@ class Company :
             self.avg_age,
             self.offers,
             json.dumps(self.all_offers, ensure_ascii=False),
-            self.spontane,
-            self.email,
-            self.phone_number
+            self.spontane
             ))
         except Exception as e:
             print(f"[SQLite] Erreur lors de l'enregistrement de {self.name} : {e}")

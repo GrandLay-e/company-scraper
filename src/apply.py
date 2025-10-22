@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import json
+import json
 import IDS
 from CONST import *
 from functions import *
@@ -110,10 +110,11 @@ if __name__ == "__main__":
 
     # Get all companies from the JSON file and filter them
     cps = Companies([])
-    data = cps.get_companies_from_json(JSON_FILE).companies
+    
+    # data = cps.get_companies_from_json(JSON_FILE).companies
+    data = cps.get_companies_from_sqlite(DB_FILE).companies
     if not data:
-        logger.error("No companies found in the JSON file.")
-        # driver.quit()
+        logger.error("No companies found in the DB file.")
         exit(1)
 
     # Get the list of applied and ignored companies
@@ -121,8 +122,7 @@ if __name__ == "__main__":
     ignored_companies = get_companies_list(IGNORED)
 
     # Filter companies based on location, spontaneity, and domain
-    filtered_companies = [c for c in data if any(loc in c.location.split(", ") for loc in IDS.LOCATIONS)
-                            and c.spontane == "Oui"
+    filtered_companies = [c for c in data if c.spontane == "Yes"
                             and c.name not in applied_companies + ignored_companies]
     
     print(len(filtered_companies))
@@ -133,16 +133,16 @@ if __name__ == "__main__":
         exit(0)
 
     # Apply to each company
-    # for company in filtered_companies:
-    #     # # Apply to the company and check for success
-    #     if not apply_to_company(driver, company):
-    #         add_companies_in_file(IGNORED, company.name)
-    #         logger.info(f"Application failed for {company.name}.")
-    #         print(f"Application failed for {company.name}.")
-    #     else:
-    #         add_companies_in_file(APPLIED, company.name)
-    #         logger.info(f"Application succeeded for {company.name}.")
-    #         print(f"Application succeeded for {company.name}.")
+    for company in filtered_companies:
+        # # Apply to the company and check for success
+        if not apply_to_company(driver, company):
+            add_companies_in_file(IGNORED, company.name)
+            logger.info(f"Application failed for {company.name}.")
+            print(f"Application failed for {company.name}.")
+        else:
+            add_companies_in_file(APPLIED, company.name)
+            logger.info(f"Application succeeded for {company.name}.")
+            print(f"Application succeeded for {company.name}.")
 
     driver.quit()
     # End of the script

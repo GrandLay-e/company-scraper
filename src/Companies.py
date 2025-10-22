@@ -40,10 +40,8 @@ class Companies:
                     number_salaries=row[5],
                     average_age=row[6],
                     offers=row[7],
-                    all_offers= json.loads(row[8]),
+                    all_offers= json.loads(row[8]) if isinstance(row[8], (str, bytes, bytearray)) else row[8],
                     spontaneous_application=row[9],
-                    email=row[10],
-                    phone_number=row[11]
                 ) for row in all_companies
             ])
 
@@ -61,8 +59,6 @@ class Companies:
                 company.get("Offers Number", "Unknown"),
                 company.get("Offers List", "Unknown"),
                 company.get("Spontaneous application", "Unknown"),
-                company.get("E-Mail", "Unknown"),
-                company.get("Phone", "Unknown")
             ) for name, company in all_companies.items()
         ])
 

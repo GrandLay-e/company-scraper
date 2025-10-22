@@ -25,10 +25,12 @@ def main():
     find_and_click(driver, 1, "SECTOR")
     find_and_click(driver, 3, "TECH")
     find_and_click(driver, 4, "SEARCH BUTTON")
-    tpage = driver.current_url
-    number_of_pages = get_number_of_pages(driver, tpage)
-    print(f"Number of pages found: {number_of_pages}")
-    all_pages = get_all_pages_url(tpage, number_of_pages)
+
+    # You can comment the the five previous lines and uncomment the following line to skip directly to a specific page
+    # get_url(driver, MAIN_TECH_PAGE_URL) # or you can use any other page url
+    page = driver.current_url
+    number_of_pages = get_number_of_pages(driver, page)
+    all_pages = get_all_pages_url(page, number_of_pages)
     for page in all_pages:
         logger.info(f"Processing page: {page}")
         blocks = get_companys_blocks(driver, page)
@@ -41,6 +43,7 @@ def main():
                 # Option to apply to the company
                 # Uncomment the following lines to enable application functionality and add the filter conditions you need
                 # try:
+                      #Filter conditions for applying to a company
                 #     if company.spontane == "Oui" and "Paris" in company.location:
                 #         if not connected:
                 #             driver_for_apply = init_driver()
@@ -49,7 +52,10 @@ def main():
                 #                 continue
                 #             connect(driver_for_apply)
                 #             connected = True
-                #         apply_to_company(driver_for_apply,company,applied_companies)
+                #         applied_companies = get_companies_list(APPLIED)
+                #         ignored_companies = get_companies_list(IGNORED)
+                #         if company.name not in applied_companies + ignored_companies:
+                #             apply_to_company(driver_for_apply, company)
                 # except Exception as e:
                 #     logger.error(f"An error occurred while applying to {company.name}: {e}")
                 #     continue
@@ -77,17 +83,8 @@ def main():
     logger.info("Company scraping process completed successfully.")
 
 if __name__ == "__main__":
-    companies = Companies([])
-    companies = companies.get_companies_from_json(JSON_FILE)
-    filtered_companies = [c.location.split(", ") for c in companies.companies 
-                          if any(loc in c.location.split(",") for loc in IDS.LOCATIONS)
-                          and c.spontane == "Oui"]
+    import os
+    os.makedirs("../test", exist_ok=True)
+    os.makedirs("../test1", exist_ok=True)
+    print("Log and Data directories are ready.")
 
-    a = get_companies_list(APPLIED)
-    b = get_companies_list(IGNORED)
-
-    for c in a:
-        add_companies_in_file(APPLIED, c)
-
-    for c in b:
-        add_companies_in_file(IGNORED, c)
