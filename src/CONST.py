@@ -1,4 +1,5 @@
-APPLIED = "data/applied"
-LOGGING_FILE = "log/process.log"
+APPLIED = "data/applied.json"
+IGNORED = "data/ignored.json"
+LOGGING_FILE = "log/process(stage).log"
 JSON_FILE = "data/data.json"
 DB_FILE = "data/data.db"

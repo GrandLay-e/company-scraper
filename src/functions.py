@@ -21,7 +21,7 @@ def setup_logger():
     """
     try:
         logging.basicConfig(
-            filemode='w',
+            filemode='a',
             filename=LOGGING_FILE,
             level=logging.INFO,
             format='%(asctime)s [%(levelname)s] %(message)s',

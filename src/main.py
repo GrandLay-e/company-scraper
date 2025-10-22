@@ -10,7 +10,7 @@ def main():
     """
     
     connected = False
-    applied_companies = get_applied(APPLIED)
+    # applied_companies = get_applied(APPLIED)
 
     companies = Companies([])  # Initialize an empty Companies object
     logger.info("Starting the company scraping process...")
@@ -77,4 +77,17 @@ def main():
     logger.info("Company scraping process completed successfully.")
 
 if __name__ == "__main__":
-    main()
+    companies = Companies([])
+    companies = companies.get_companies_from_json(JSON_FILE)
+    filtered_companies = [c.location.split(", ") for c in companies.companies 
+                          if any(loc in c.location.split(",") for loc in IDS.LOCATIONS)
+                          and c.spontane == "Oui"]
+
+    a = get_companies_list(APPLIED)
+    b = get_companies_list(IGNORED)
+
+    for c in a:
+        add_companies_in_file(APPLIED, c)
+
+    for c in b:
+        add_companies_in_file(IGNORED, c)
