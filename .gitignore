@@ -12,8 +12,7 @@ src/*.pyc
 # Logs
 *.log
 log/
-log/Sites.log
-
+data/
 # Data
 data/applied
 
@@ -26,6 +25,7 @@ data/applied
 *.txt
 *.json
 *.db
+*.csv
 *.xml
 
 # Virtual environments
